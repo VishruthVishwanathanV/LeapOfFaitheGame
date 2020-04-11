@@ -79,79 +79,38 @@ public class Player : MonoBehaviour {
 
 			}
 		}
-		//Logic for the terrain lopp
+
+		/*//Logic for the terrain lopp
 		if(  Input.GetAxis("Vertical") > 0 ) {
 			
 			remy.SetTrigger( "jump" );
 			
-		}
+		}*/
+
 
 		//Logic for the input touches and movements in the mobile
-		for ( int i = 0; i < Input.touchCount; i++ ) {
-
-			Touch touch = Input.GetTouch( i );
-
-			if ( touch.phase == TouchPhase.Began ) {
-
-				verticalStartTouchPosition = touch.position.y;
-				horizontalStartTouchPosition = touch.position.x;
-
-			} else if ( touch.phase == TouchPhase.Ended ) {
-
-				verticalEndTouchPosition = touch.position.y;
-				horizontalEndTouchPosition = touch.position.x;
-
-				if ( verticalEndTouchPosition > verticalStartTouchPosition && 
-				    ( ( verticalEndTouchPosition - verticalStartTouchPosition ) > swipeSensitivity ) ) {
-
-					remy.SetTrigger( "jump" );
-
-				}else if( verticalEndTouchPosition < verticalStartTouchPosition && 
-				         ( ( verticalStartTouchPosition - verticalEndTouchPosition ) > swipeSensitivity ) ){
-
-					remy.SetTrigger( "slide" );
-
-				}else if( ( horizontalEndTouchPosition > horizontalStartTouchPosition ) && 
-				         ( ( horizontalEndTouchPosition - horizontalStartTouchPosition ) > swipeSensitivity ) && transform.position.x <= 0.0f ){
-
-					rb.MovePosition( transform.position + horizontalMovement );
-
-				}else if( ( horizontalEndTouchPosition < horizontalStartTouchPosition ) && 
-				         ( ( horizontalStartTouchPosition - horizontalEndTouchPosition ) > swipeSensitivity ) && transform.position.x >= 0.0f ){
-
-					rb.MovePosition( transform.position - horizontalMovement );
-				}
-			}
-		}
-		//Logic for the input touches and movements in the mobile
-
-
-	}
-
-	void OnTriggerEnter( Collider other )
-	{
-		if ( other.gameObject.CompareTag( "obstacles" ) ){
-
-			remy.SetTrigger( "stumbleBackward" );
-			stop = 1;
-		
-		}
-
-		if ( other.gameObject.CompareTag( "coin" )){
-			Destroy( other.gameObject );
-		}
-
-	}
-
-	/*void OnCollisionEnter(Collision collision)
-	{
-		if (collision.gameObject.CompareTag("obstacle"))
+		if ( Input.touchCount > 0 )
 		{
-			remy.SetTrigger("stumbleBackward");
+			playerControl();
+		}
+
+	}
+
+	void OnCollisionEnter(Collision collision)
+	{
+
+		if (collision.gameObject.CompareTag("coin"))
+		{
+			Destroy(collision.gameObject);
+		}
+		else if (collision.gameObject.CompareTag("obstacles"))
+		{
+			remy.SetTrigger("fallForward");
+			rb.velocity = new Vector3(0, 0, 0);
+			UnityEngine.SceneManagement.SceneManager.LoadScene("mainMenu");
 			stop = 1;
 		}
-	}*/
-		
+	}
 
 
 	void FixedUpdate(){
@@ -244,7 +203,6 @@ public class Player : MonoBehaviour {
 			int randPlacing = ( int )Random.Range ( 0 , 2 );
 			Debug.Log("The Value of the PSIndex1 is "+ randPlacing);
 
-			int tempCalculation;
 			switch(randPlacing){
 			case 0:
 				Instantiate( pointSystemList[ randPS ] , new Vector3( -5 , 0 , ( float ) i  ), Quaternion.identity );
@@ -262,5 +220,56 @@ public class Player : MonoBehaviour {
 
 	}
 
+	private void playerControl()
+	{
+		//Logic for the input touches and movements in the mobile
+		for (int i = 0; i < Input.touchCount; i++)
+		{
+
+			Touch touch = Input.GetTouch(i);
+
+			if (touch.phase == TouchPhase.Began)
+			{
+
+				verticalStartTouchPosition = touch.position.y;
+				horizontalStartTouchPosition = touch.position.x;
+
+			}
+			else if (touch.phase == TouchPhase.Ended)
+			{
+
+				verticalEndTouchPosition = touch.position.y;
+				horizontalEndTouchPosition = touch.position.x;
+
+				if (verticalEndTouchPosition > verticalStartTouchPosition &&
+					((verticalEndTouchPosition - verticalStartTouchPosition) > swipeSensitivity))
+				{
+
+					remy.SetTrigger("jump");
+
+				}
+				else if (verticalEndTouchPosition < verticalStartTouchPosition &&
+						((verticalStartTouchPosition - verticalEndTouchPosition) > swipeSensitivity))
+				{
+
+					remy.SetTrigger("slide");
+
+				}
+				else if ((horizontalEndTouchPosition > horizontalStartTouchPosition) &&
+						((horizontalEndTouchPosition - horizontalStartTouchPosition) > swipeSensitivity) && transform.position.x <= 0.0f)
+				{
+
+					rb.MovePosition(transform.position + horizontalMovement);
+
+				}
+				else if ((horizontalEndTouchPosition < horizontalStartTouchPosition) &&
+						((horizontalStartTouchPosition - horizontalEndTouchPosition) > swipeSensitivity) && transform.position.x >= 0.0f)
+				{
+
+					rb.MovePosition(transform.position - horizontalMovement);
+				}
+			}
+		}
+	}
 
 }
