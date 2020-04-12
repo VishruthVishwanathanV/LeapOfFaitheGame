@@ -7,6 +7,7 @@ public class Player : MonoBehaviour {
 	public float speed;
 	public int stop;
 	public int swipeSensitivity;
+	public float touchSensitivity;
 
 	public GameObject preTerrain;
 	public GameObject sucTerrain;
@@ -33,6 +34,7 @@ public class Player : MonoBehaviour {
 		remy = GetComponent<Animator> ();
 		stop = 0;
 		swipeSensitivity = 20;
+		touchSensitivity = Screen.width / 2;
 
 		//Loogping terrain logic
 		terrainStep = 500;
@@ -223,21 +225,16 @@ public class Player : MonoBehaviour {
 	private void playerControl()
 	{
 		//Logic for the input touches and movements in the mobile
-		for (int i = 0; i < Input.touchCount; i++)
+		Touch touch = Input.GetTouch(0);
+		
+		switch ( touch.phase )
 		{
-
-			Touch touch = Input.GetTouch(i);
-
-			if (touch.phase == TouchPhase.Began)
-			{
-
+			case TouchPhase.Began:
 				verticalStartTouchPosition = touch.position.y;
 				horizontalStartTouchPosition = touch.position.x;
+				break;
 
-			}
-			else if (touch.phase == TouchPhase.Ended)
-			{
-
+			case TouchPhase.Ended:
 				verticalEndTouchPosition = touch.position.y;
 				horizontalEndTouchPosition = touch.position.x;
 
@@ -252,24 +249,34 @@ public class Player : MonoBehaviour {
 						((verticalStartTouchPosition - verticalEndTouchPosition) > swipeSensitivity))
 				{
 
-					remy.SetTrigger("slide");
+					remy.SetTrigger( "slide" );
 
 				}
-				else if ((horizontalEndTouchPosition > horizontalStartTouchPosition) &&
-						((horizontalEndTouchPosition - horizontalStartTouchPosition) > swipeSensitivity) && transform.position.x <= 0.0f)
+				else if (horizontalStartTouchPosition >= touchSensitivity && transform.position.x < 0.0f)
+				{
+					
+					rb.position = new Vector3( 0.0f , rb.position.y, rb.position.z);
+
+				}
+				else if (horizontalStartTouchPosition < touchSensitivity && transform.position.x > 0.0f)
 				{
 
-					rb.MovePosition(transform.position + horizontalMovement);
-
+					rb.position = new Vector3( 0.0f, rb.position.y, rb.position.z);
 				}
-				else if ((horizontalEndTouchPosition < horizontalStartTouchPosition) &&
-						((horizontalStartTouchPosition - horizontalEndTouchPosition) > swipeSensitivity) && transform.position.x >= 0.0f)
+				else if ( horizontalStartTouchPosition >= touchSensitivity && transform.position.x == 0.0f )
 				{
 
-					rb.MovePosition(transform.position - horizontalMovement);
+					rb.position = new Vector3(6.0f, rb.position.y, rb.position.z);
+
 				}
-			}
+				else if (horizontalStartTouchPosition < touchSensitivity && transform.position.x == 0.0f )
+				{
+
+					rb.position = new Vector3( -6.0f, rb.position.y, rb.position.z);
+				}
+				break;
 		}
+
 	}
 
 }
