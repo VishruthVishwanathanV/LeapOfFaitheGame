@@ -19,6 +19,16 @@ public class camScript : MonoBehaviour
 		float x = player.transform.position.x;
 		float z = player.transform.position.z;
 
-		transform.position = new Vector3(0.0f,heightOfCamera,z)-offset;
+		transform.position = new Vector3(transform.position.x,heightOfCamera,z)-offset;
+    }
+
+    public Vector3 getPosition()
+    {
+        return transform.position;
+    }
+
+    public void setPosition( Vector3 position )
+    {
+        transform.position = position;
     }
 }
