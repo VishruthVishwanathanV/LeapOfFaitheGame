@@ -136,8 +136,8 @@ public class Player : MonoBehaviour {
 		{
 			remy.SetTrigger("fallForward");
 			rb.velocity = new Vector3(0, 0, 0);
-			UnityEngine.SceneManagement.SceneManager.LoadScene("mainMenu");
-			stop = 1;
+			//UnityEngine.SceneManagement.SceneManager.LoadScene("mainMenu");
+			//stop = 1;
 		}
 	}
 
