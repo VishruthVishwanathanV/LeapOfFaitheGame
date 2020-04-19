@@ -59,14 +59,13 @@ public class Player : MonoBehaviour {
 		}
 
 		pointSystems = Resources.LoadAll("Points");
-		Debug.Log("pointsSystems Count is " + pointSystems.Length);
+		
 		//pointSystemList = (GameObject) pointSystems;
 		foreach (Object pointSystem in pointSystems) {
 			GameObject tempGameObject = (GameObject)pointSystem;
 			pointSystemList.Add(tempGameObject);
 		}
-		Debug.Log("Text: pointSystem List" + pointSystemList);
-		//basicPS(0);
+		Debug.Log("Text: pointSystem List" + pointSystemList);		
 		buildTree();
 
 	}
@@ -160,7 +159,7 @@ public class Player : MonoBehaviour {
 		float treeDistanceFromCenter = 25f;
 		double i;
 
-		basicPS((int)initPosTree);
+		pointSystem((int)initPosTree);
 
 		for (i = initPosTree; i < (treeWidth + initPosTree); i++) {
 
@@ -201,24 +200,33 @@ public class Player : MonoBehaviour {
 	}
 
 	//Basic point system for the Initial
-	void basicPS(int origin) {
+	void pointSystem(int origin) {
+		
+		if( origin < 300)
+		{
+			basicPS(origin);
+		} else
+		{
 
+		}
+
+	}
+
+		
+	void basicPS(int origin)
+	{
 		int end = origin + 500;
 		int calculatedEnd = origin + 50;
 		int randPS = (int)Random.Range(0, pointSystemList.Count - 1);
 
-		Debug.Log("The Value of the iniside the function randPS is " + randPS);
-
-		Debug.Log("The Value of the length of the transform origin is " + origin);
-		//initialize from origin+50
-
-
-		for (int i = origin + 50; i < end; i = i + 150) {
+		for (int i = origin + 50; i < end; i = i + 150)
+		{
 
 			int randPlacing = (int)Random.Range(0, 2);
 			Debug.Log("The Value of the PSIndex1 is " + randPlacing);
 
-			switch (randPlacing) {
+			switch (randPlacing)
+			{
 				case 0:
 					Instantiate(pointSystemList[randPS], new Vector3(-5, 0, (float)i), Quaternion.identity);
 					break;
@@ -232,7 +240,6 @@ public class Player : MonoBehaviour {
 			Debug.Log("The Value of the PSIndex1 is " + calculatedEnd);
 
 		}
-
 	}
 
 	private void playerControl()
