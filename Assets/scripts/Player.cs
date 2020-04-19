@@ -5,11 +5,11 @@ using System.Collections.Generic;
 public class Player : MonoBehaviour {
 
 	public float speed;
-	public float maxSpeedValue = 50.0f;
+	public float maxSpeedValue = 130.0f;
 	public int stop;
 	public int swipeSensitivity;
 	public float touchSensitivity;
-	public System.Boolean cameraTilt = false;
+	public System.Boolean cameraTilt;
 	public int cameraShake = 10;
 	public int cameraShakeMax = 10;
 	public Vector3 cameraOriginalPosition;
@@ -22,6 +22,7 @@ public class Player : MonoBehaviour {
 	//Logic to loop the terrain Map
 	float terrainStep;
 	float terrainLoop;
+	public camScript cameraScript;
 
 	private float verticalStartTouchPosition, verticalEndTouchPosition, horizontalStartTouchPosition, horizontalEndTouchPosition;
 	private Vector3 horizontalMovement = new Vector3(6.0f, 0.0f, 0.0f);
@@ -38,11 +39,13 @@ public class Player : MonoBehaviour {
 
 	void Start() {
 
+		cameraScript = GameObject.Find("Main Camera").GetComponent<camScript>();
 		rb = GetComponent<Rigidbody>();
 		remy = GetComponent<Animator>();
 		stop = 0;
 		swipeSensitivity = 20;
 		touchSensitivity = Screen.width / 2;
+		cameraTilt = false;
 
 		rb.velocity = new Vector3(0, 0, speed);
 
@@ -109,24 +112,27 @@ public class Player : MonoBehaviour {
 			rb.velocity = new Vector3(0, 0, 0);
 
 		}
-		else if( speed < maxSpeedValue && ( ScoreScript.scoreValue / ( speed * 10.0f ) ) > 1.0f )
+
+	}
+
+	private void OnTriggerEnter(Collider other)
+	{
+		if (other.gameObject.CompareTag("coin"))
 		{
+			Destroy(other.gameObject);
+			ScoreScript.scoreValue += 1;
 
-			speed += 10.0f;
-
+			if (speed < maxSpeedValue && (ScoreScript.scoreValue % 100f) == 0f)
+			{
+				speed += 10.0f;
+			}
 		}
-
 	}
 
 	void OnCollisionEnter(Collision collision)
 	{
 
-		if (collision.gameObject.CompareTag("coin"))
-		{
-			Destroy(collision.gameObject);
-			ScoreScript.scoreValue += 1;
-		}
-		else if (collision.gameObject.CompareTag("obstacles"))
+		if (collision.gameObject.CompareTag("obstacles"))
 		{
 			remy.SetTrigger("fallForward");
 			rb.velocity = new Vector3(0, 0, 0);
@@ -147,7 +153,7 @@ public class Player : MonoBehaviour {
 
 		}
 
-		rb.velocity = new Vector3(0, 0, speed + 10);
+		rb.velocity = new Vector3(0, 0, speed );
 
 	}
 
@@ -271,41 +277,30 @@ public class Player : MonoBehaviour {
 					remy.SetTrigger("slide");
 
 				}
-				else if (horizontalStartTouchPosition == horizontalEndTouchPosition)
+				else if ((horizontalStartTouchPosition - horizontalEndTouchPosition) < swipeSensitivity)
 				{
-					if (horizontalStartTouchPosition >= touchSensitivity && transform.position.x < 0.0f)
-					{
-						rb.position = new Vector3(0.0f, rb.position.y, rb.position.z);
-					}
-					else if (horizontalStartTouchPosition < touchSensitivity && transform.position.x > 0.0f)
-					{
-						rb.position = new Vector3(0.0f, rb.position.y, rb.position.z);
-					}
-					else if (horizontalStartTouchPosition >= touchSensitivity && transform.position.x > -6.0f && transform.position.x < 5.0f)
-					{
-						rb.position = new Vector3(6.0f, rb.position.y, rb.position.z);
-					}
-					else if (horizontalStartTouchPosition < touchSensitivity && transform.position.x < 6.0f && transform.position.x > -5.0f)
-					{
-						rb.position = new Vector3(-6.0f, rb.position.y, rb.position.z);						
+					Vector3 cameraCurrentPosition = cameraScript.getPosition();
 
-					}
-					else if (horizontalStartTouchPosition < touchSensitivity && transform.position.x <= -5.0f)
+					if ((horizontalStartTouchPosition < touchSensitivity && transform.position.x == -5.0f) ||
+						(horizontalStartTouchPosition >= touchSensitivity && transform.position.x == 5.0f))
 					{
 						cameraTilt = true;
-						if ( speed >= 70.0f )
+						if (speed >= 70.0f)
 						{
-							speed = 20.0f;
+							speed -= 50.0f;
 						}
 					}
-					else if (horizontalStartTouchPosition >= touchSensitivity && transform.position.x > 5.0f)
+					else if (horizontalStartTouchPosition >= touchSensitivity && transform.position.x < 5.0f)
 					{
-						cameraTilt = true;
-						if ( speed >= 70.0f )
-						{
-							speed = 20.0f;
-						}
+						rb.position = new Vector3(rb.position.x + 5.0f, rb.position.y, rb.position.z);
+						cameraScript.setPosition(new Vector3(rb.position.x, cameraCurrentPosition.y, cameraCurrentPosition.z));
 					}
+					else if (horizontalStartTouchPosition < touchSensitivity && transform.position.x > -5.0f)
+					{
+						rb.position = new Vector3(rb.position.x - 5.0f, rb.position.y, rb.position.z);
+						cameraScript.setPosition(new Vector3(rb.position.x, cameraCurrentPosition.y, cameraCurrentPosition.z));
+					}
+
 				}
 				break;
 		}

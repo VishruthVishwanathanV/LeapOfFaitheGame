@@ -16,10 +16,9 @@ public class camScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-		float x = player.transform.position.x;
 		float z = player.transform.position.z;
 
-		transform.position = new Vector3(transform.position.x,heightOfCamera,z)-offset;
+		transform.position = new Vector3( transform.position.x ,heightOfCamera,z)-offset;
     }
 
     public Vector3 getPosition()
