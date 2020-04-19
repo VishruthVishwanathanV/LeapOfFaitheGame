@@ -105,14 +105,6 @@ public class Player : MonoBehaviour {
 			shakeCamera();
 		}
 
-		//To change the speed of the player
-		if (stop == 1)
-		{
-
-			rb.velocity = new Vector3(0, 0, 0);
-
-		}
-
 	}
 
 	private void OnTriggerEnter(Collider other)
@@ -136,8 +128,7 @@ public class Player : MonoBehaviour {
 		{
 			remy.SetTrigger("fallForward");
 			rb.velocity = new Vector3(0, 0, 0);
-			//UnityEngine.SceneManagement.SceneManager.LoadScene("mainMenu");
-			//stop = 1;
+			stop = 1;
 		}
 	}
 
@@ -153,8 +144,12 @@ public class Player : MonoBehaviour {
 
 		}
 
-		rb.velocity = new Vector3(0, 0, speed );
-
+		if ( stop == 1 ) {
+			rb.velocity = new Vector3(0, 0, 0);
+		}
+		else { 
+			rb.velocity = new Vector3(0, 0, speed);
+		}
 	}
 
 
@@ -292,13 +287,13 @@ public class Player : MonoBehaviour {
 					}
 					else if (horizontalStartTouchPosition >= touchSensitivity && transform.position.x < 5.0f)
 					{
-						rb.position = new Vector3(rb.position.x + 5.0f, rb.position.y, rb.position.z);
-						cameraScript.setPosition(new Vector3(rb.position.x, cameraCurrentPosition.y, cameraCurrentPosition.z));
+						cameraScript.setPosition(new Vector3(cameraCurrentPosition.x + 5.0f, cameraCurrentPosition.y, cameraCurrentPosition.z));
+						rb.position = new Vector3(rb.position.x + 5.0f, rb.position.y, rb.position.z);						
 					}
 					else if (horizontalStartTouchPosition < touchSensitivity && transform.position.x > -5.0f)
 					{
-						rb.position = new Vector3(rb.position.x - 5.0f, rb.position.y, rb.position.z);
-						cameraScript.setPosition(new Vector3(rb.position.x, cameraCurrentPosition.y, cameraCurrentPosition.z));
+						cameraScript.setPosition(new Vector3(cameraCurrentPosition.x - 5.0f, cameraCurrentPosition.y, cameraCurrentPosition.z));
+						rb.position = new Vector3(rb.position.x - 5.0f, rb.position.y, rb.position.z);						
 					}
 
 				}
