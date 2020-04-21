@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class camScript : MonoBehaviour
-{	public GameObject player;
+{	
+    public GameObject player;
 	public float heightOfCamera;
 	public float offsetFromPlatyer;
 	private Vector3 offset;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -16,9 +18,9 @@ public class camScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-		float z = player.transform.position.z;
+        float z = player.transform.position.z;
 
-		transform.position = new Vector3( transform.position.x ,heightOfCamera,z)-offset;
+        transform.position = new Vector3(transform.position.x, heightOfCamera, z) - offset;
     }
 
     public Vector3 getPosition()
