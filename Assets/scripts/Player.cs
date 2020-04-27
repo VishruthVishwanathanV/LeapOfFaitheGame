@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Security.Cryptography;
 
 public class Player : MonoBehaviour {
 
@@ -31,11 +33,11 @@ public class Player : MonoBehaviour {
 	private Animator remy;
 
 	Object[] trees = new Object[100];
-	Object[] pointSystems = new Object[100];
-	List<GameObject> treeList = new List<GameObject>();
-	List<GameObject> pointSystemList = new List<GameObject>();
+	
+	List<GameObject> treeList = new List<GameObject>();	
 	public double treeWidth = 400.0;
 	public double initPosTree = 0.0;
+	private BoxCollider playerCollider;
 
 	void Start() {
 
@@ -61,14 +63,9 @@ public class Player : MonoBehaviour {
 			treeList.Add(tempGameObject);
 		}
 
-		pointSystems = Resources.LoadAll("Points");
 		
-		//pointSystemList = (GameObject) pointSystems;
-		foreach (Object pointSystem in pointSystems) {
-			GameObject tempGameObject = (GameObject)pointSystem;
-			pointSystemList.Add(tempGameObject);
-		}
-		Debug.Log("Text: pointSystem List" + pointSystemList);		
+		playerCollider = GetComponent<Collider>() as BoxCollider;
+
 		buildTree();
 
 	}
@@ -98,11 +95,58 @@ public class Player : MonoBehaviour {
 		if (Input.touchCount > 0)
 		{
 			playerControl();
+		}else if ( Input.GetKeyDown(KeyCode.W) )
+		{
+			remy.SetTrigger("jump");
+		}else if ( Input.GetKeyDown(KeyCode.S) )
+		{
+			remy.SetTrigger("slide");
+		}else if (Input.GetKeyDown(KeyCode.D))
+		{
+			Vector3 cameraCurrentPosition = cameraScript.getPosition();
+			if ( rb.transform.position.x < 5.0f ) {
+				cameraScript.setPosition(new Vector3(cameraCurrentPosition.x + 5.0f, cameraCurrentPosition.y, cameraCurrentPosition.z));
+				rb.position = new Vector3(rb.position.x + 5.0f, rb.position.y, rb.position.z);
+			}
+			else
+			{
+				cameraTilt = true;
+				if (speed >= 70.0f)
+				{
+					speed -= 50.0f;
+				}
+			}
+		}else if (Input.GetKeyDown(KeyCode.A))
+		{
+			if (rb.transform.position.x > -5.0f)
+			{
+				Vector3 cameraCurrentPosition = cameraScript.getPosition();
+				cameraScript.setPosition(new Vector3(cameraCurrentPosition.x - 5.0f, cameraCurrentPosition.y, cameraCurrentPosition.z));
+				rb.position = new Vector3(rb.position.x - 5.0f, rb.position.y, rb.position.z);
+			}
+			else
+			{
+				cameraTilt = true;
+				if (speed >= 70.0f)
+				{
+					speed -= 50.0f;
+				}
+			}
 		}
 
 		if ( cameraTilt )
 		{
 			shakeCamera();
+		}
+
+		//Logic for the Looping of the trees sideways
+		if ((int)rb.transform.position.z > (initPosTree - 100.0))
+		{
+
+			initPosTree = initPosTree + 500.0;
+
+			buildTree();//Logic to loop build trees
+
 		}
 
 	}
@@ -119,12 +163,7 @@ public class Player : MonoBehaviour {
 				speed += 10.0f;
 			}
 		}
-	}
-
-	void OnCollisionEnter(Collision collision)
-	{
-
-		if (collision.gameObject.CompareTag("obstacles"))
+		if (other.gameObject.CompareTag("obstacles"))
 		{
 			remy.SetTrigger("fallForward");
 			rb.velocity = new Vector3(0, 0, 0);
@@ -134,15 +173,6 @@ public class Player : MonoBehaviour {
 
 
 	void FixedUpdate() {
-
-		//Logic for the Looping of the trees sideways
-		if ((int)transform.position.z > (initPosTree - 100.0)) {
-
-			initPosTree = initPosTree + 500.0;
-
-			buildTree();//Logic to loop build trees
-
-		}
 
 		if ( stop == 1 ) {
 			rb.velocity = new Vector3(0, 0, 0);
@@ -159,12 +189,10 @@ public class Player : MonoBehaviour {
 		int distanceBetweenTree = 40;
 		float treeDistanceFromCenter = 25f;
 		double i;
-
 		pointSystem((int)initPosTree);
-
 		for (i = initPosTree; i < (treeWidth + initPosTree); i++) {
 
-			//initPosTree = initPosTree + 500;
+			
 			i = i + distanceBetweenTree;
 
 			int randTreeCountLeft = (int)Random.Range(0, treeList.Count - 1);
@@ -205,10 +233,16 @@ public class Player : MonoBehaviour {
 		
 		if( origin < 300)
 		{
-			basicPS(origin);
+			basicPS( origin );
 		} else
-		{
-
+		{	
+			int choiceToSelectPS = (int)Random.Range(0, 2);
+			Debug.Log("The Value of the Random Variable is :" + choiceToSelectPS);
+			switch (choiceToSelectPS) { 
+				case 0: advancedPS1(origin); break;
+				case 1: advancedPS2(origin); break;
+				default: advancedPS2(origin); break;
+			}
 		}
 
 	}
@@ -216,31 +250,98 @@ public class Player : MonoBehaviour {
 		
 	void basicPS(int origin)
 	{
+		Object[] pointSystems = new Object[100];
+		pointSystems = Resources.LoadAll("Points");
+		List<GameObject> localPointSystemList = new List<GameObject>();
+
+		//pointSystemList = (GameObject) pointSystems;
+		foreach (Object pointSystem in pointSystems)
+		{
+			GameObject tempGameObject = (GameObject)pointSystem;
+			localPointSystemList.Add(tempGameObject);
+		}
 		int end = origin + 500;
 		int calculatedEnd = origin + 50;
-		int randPS = (int)Random.Range(0, pointSystemList.Count - 1);
 
-		for (int i = origin + 50; i < end; i = i + 150)
+		Debug.Log("This is the advancedThe Value of origin is " + origin);
+
+		for (int i = origin + 50; i < end; i = i+150)
 		{
 
-			int randPlacing = (int)Random.Range(0, 2);
-			Debug.Log("The Value of the PSIndex1 is " + randPlacing);
-
+			int randPlacing = (int)Random.Range(0, 3);		
+			int randPS = (int)Random.Range(0, localPointSystemList.Count);
+			Debug.Log("The Valie of the randPS is " + randPS + "The Value of the PSIndex1 is " + randPlacing);
 			switch (randPlacing)
 			{
 				case 0:
-					Instantiate(pointSystemList[randPS], new Vector3(-5, 0, (float)i), Quaternion.identity);
+					Instantiate(localPointSystemList[randPS], new Vector3(-5, 0, (float)i), Quaternion.identity);
 					break;
 				case 1:
-					Instantiate(pointSystemList[randPS], new Vector3(0, 0, (float)i), Quaternion.identity);
+					Instantiate(localPointSystemList[randPS], new Vector3(0, 0, (float)i), Quaternion.identity);
 					break;
 				case 2:
-					Instantiate(pointSystemList[randPS], new Vector3(5, 0, (float)i), Quaternion.identity);
+					Instantiate(localPointSystemList[randPS], new Vector3(5, 0, (float)i), Quaternion.identity);
 					break;
 			}
-			Debug.Log("The Value of the PSIndex1 is " + calculatedEnd);
-
 		}
+	}
+
+	void advancedPS1(int origin)
+	{
+		Object[] pointSystems = new Object[100];
+		pointSystems = Resources.LoadAll("Points");
+		List<GameObject> localPointSystemList = new List<GameObject>();
+		//pointSystemList = (GameObject) pointSystems;
+		foreach (Object pointSystem in pointSystems)
+		{
+			GameObject tempGameObject = (GameObject)pointSystem;
+			localPointSystemList.Add(tempGameObject);
+		}
+		int end = origin + 500;
+		int calculatedEnd = origin + 50;
+
+		Debug.Log("This is the advancedThe Value of origin is " + origin);
+
+		for (int i = origin + 60; i < end; i = i + 150)
+		{
+
+			int randPlacing = (int)Random.Range(0, 3);
+			int randPS = (int)Random.Range(0, localPointSystemList.Count);
+			Debug.Log("The Valie of the randPS is " + randPS + "The Value of the PSIndex1 is " + randPlacing);
+			switch (randPlacing)
+			{
+				case 0:
+					Instantiate(localPointSystemList[randPS], new Vector3(-5, 0, (float)i), Quaternion.identity);
+					break;
+				case 1:
+					Instantiate(localPointSystemList[randPS], new Vector3(0, 0, (float)i), Quaternion.identity);
+					break;
+				case 2:
+					Instantiate(localPointSystemList[randPS], new Vector3(5, 0, (float)i), Quaternion.identity);
+					break;
+			}
+		}
+	}
+
+	void advancedPS2(int origin)
+	{
+		Object[] pointSystems = new Object[100];
+		pointSystems = Resources.LoadAll("Points-2");
+		List<GameObject> localPointSystemList = new List<GameObject>();
+		//pointSystemList = (GameObject) pointSystems;
+		Debug.Log("inside the advancedPS2"+ pointSystems.Length);
+		foreach (Object pointSystem in pointSystems)
+		{
+			GameObject tempGameObject = (GameObject)pointSystem;
+			localPointSystemList.Add(tempGameObject);
+		}
+		int end = origin + 500;
+		int calculatedEnd = origin + 50;
+		int randomPSNumber1 = (int)Random.Range(0, localPointSystemList.Count);
+		Debug.Log("This is the advancedThe Value of origin is " + origin);
+		Instantiate(localPointSystemList[randomPSNumber1], new Vector3(0, 0, (float)origin), Quaternion.identity);
+		int randomPSNumber2 = (int)Random.Range(0, localPointSystemList.Count);
+		Instantiate(localPointSystemList[randomPSNumber2], new Vector3(0, 0, (float)origin+ 250), Quaternion.identity);
 	}
 
 	private void playerControl()
