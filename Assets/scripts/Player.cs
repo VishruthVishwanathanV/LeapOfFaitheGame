@@ -3,12 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Xml.Serialization;
+using UnityEngine.UI;
 
 public class Player : MonoBehaviour {
 
 	public float speed;
 	public float maxSpeedValue = 130.0f;
-	public int stop;
+	public System.Boolean stop;
 	public int swipeSensitivity;
 	public float touchSensitivity;
 	public System.Boolean cameraTilt;
@@ -18,6 +20,8 @@ public class Player : MonoBehaviour {
 	public float currentCameraShakeDistance = 1.0f;
 	public float maxCameraShakeDistance = 1.0f;
 	public float signValue = -1;
+	public System.Boolean endGame;
+	public Button resumeButton;
 
 	public GameObject preTerrain;
 	public GameObject sucTerrain;
@@ -38,13 +42,26 @@ public class Player : MonoBehaviour {
 	public double treeWidth = 400.0;
 	public double initPosTree = 0.0;
 	private BoxCollider playerCollider;
+	private Canvas pauseCanvasObject;
+	public BoxCollider jinuCollider;
+	public AudioSource coinSound;
+	public AudioSource runSound;
 
 	void Start() {
+
+		pauseCanvasObject = GameObject.Find("PauseCanvas").GetComponent<Canvas>();
+		coinSound = GameObject.Find("CoinSound").GetComponent<AudioSource>();
+		runSound = GameObject.Find("RunningSound").GetComponent<AudioSource>();
+		resumeButton = GameObject.Find("ResumeButton").GetComponent<Button>();
+		jinuCollider = GameObject.Find("Jinu").GetComponent<BoxCollider>();
+		pauseCanvasObject.enabled = false;
+		endGame = false;
+		Time.timeScale = 1.0f;
 
 		cameraScript = GameObject.Find("Main Camera").GetComponent<camScript>();
 		rb = GetComponent<Rigidbody>();
 		remy = GetComponent<Animator>();
-		stop = 0;
+		stop = false;
 		swipeSensitivity = 20;
 		touchSensitivity = Screen.width / 2;
 		cameraTilt = false;
@@ -72,114 +89,153 @@ public class Player : MonoBehaviour {
 
 	void Update() {
 
-		//Logic for the terrain loop
-		float z = gameObject.transform.position.z;
-
-		if (z > ((terrainStep * terrainLoop) + 20)) {
-
-			terrainLoop += 1;
-
-			if ((preTerrain.transform.position.z + 500) < z) {
-
-				preTerrain.transform.position = new Vector3(preTerrain.transform.position.x, preTerrain.transform.position.y, preTerrain.transform.position.z + (terrainStep * 2));
-
-			}
-			if ((sucTerrain.transform.position.z + 500) < z) {
-
-				sucTerrain.transform.position = new Vector3(sucTerrain.transform.position.x, sucTerrain.transform.position.y, sucTerrain.transform.position.z + (terrainStep * 2));
-
-			}
-		}
-
-		//Logic for the input touches and movements in the mobile
-		if (Input.touchCount > 0)
+		if (!stop)
 		{
-			playerControl();
-		}else if ( Input.GetKeyDown(KeyCode.W) )
-		{
-			remy.SetTrigger("jump");
-		}else if ( Input.GetKeyDown(KeyCode.S) )
-		{
-			remy.SetTrigger("slide");
-		}else if (Input.GetKeyDown(KeyCode.D))
-		{
-			Vector3 cameraCurrentPosition = cameraScript.getPosition();
-			if ( rb.transform.position.x < 5.0f ) {
-				cameraScript.setPosition(new Vector3(cameraCurrentPosition.x + 5.0f, cameraCurrentPosition.y, cameraCurrentPosition.z));
-				rb.position = new Vector3(rb.position.x + 5.0f, rb.position.y, rb.position.z);
-			}
-			else
+			//Logic for the terrain loop
+			float z = gameObject.transform.position.z;
+
+			if (z > ((terrainStep * terrainLoop) + 20))
 			{
-				cameraTilt = true;
-				if (speed >= 70.0f)
+
+				terrainLoop += 1;
+
+				if ((preTerrain.transform.position.z + 500) < z)
 				{
-					speed -= 50.0f;
+
+					preTerrain.transform.position = new Vector3(preTerrain.transform.position.x, preTerrain.transform.position.y, preTerrain.transform.position.z + (terrainStep * 2));
+
+				}
+				if ((sucTerrain.transform.position.z + 500) < z)
+				{
+
+					sucTerrain.transform.position = new Vector3(sucTerrain.transform.position.x, sucTerrain.transform.position.y, sucTerrain.transform.position.z + (terrainStep * 2));
+
 				}
 			}
-		}else if (Input.GetKeyDown(KeyCode.A))
-		{
-			if (rb.transform.position.x > -5.0f)
+
+			//Logic for the input touches and movements in the mobile
+			if (Input.touchCount > 0)
 			{
-				Vector3 cameraCurrentPosition = cameraScript.getPosition();
-				cameraScript.setPosition(new Vector3(cameraCurrentPosition.x - 5.0f, cameraCurrentPosition.y, cameraCurrentPosition.z));
-				rb.position = new Vector3(rb.position.x - 5.0f, rb.position.y, rb.position.z);
+				playerControl();
 			}
-			else
+			else if (Input.GetKeyDown(KeyCode.W))
 			{
-				cameraTilt = true;
-				if (speed >= 70.0f)
+				remy.SetTrigger("jump");
+			}
+			else if (Input.GetKeyDown(KeyCode.A))
+			{
+				if (rb.position.x > -5.0f)
 				{
-					speed -= 50.0f;
+					rb.position = new Vector3(rb.position.x - 5.0f, rb.position.y, rb.position.z);
+				}
+				else
+				{
+					cameraTilt = true;
+					if (speed >= 70.0f)
+					{
+						speed -= 50.0f;
+					}
 				}
 			}
-		}
+			else if (Input.GetKeyDown(KeyCode.S))
+			{
+				remy.SetTrigger("slide");
+			}
+			else if (Input.GetKeyDown(KeyCode.D))
+			{
+				if (rb.position.x < 5.0f)
+				{
+					rb.position = new Vector3(rb.position.x + 5.0f, rb.position.y, rb.position.z);
+				}
+				else
+				{
+					cameraTilt = true;
+					if (speed >= 70.0f)
+					{
+						speed -= 50.0f;
+					}
+				}
+			}
 
-		if ( cameraTilt )
-		{
-			shakeCamera();
-		}
+			if (cameraTilt)
+			{
+				shakeCamera();
+			}
 
-		//Logic for the Looping of the trees sideways
-		if ((int)rb.transform.position.z > (initPosTree - 100.0))
-		{
+			//Logic for the Looping of the trees sideways
+			if ((int)rb.transform.position.z > (initPosTree - 100.0))
+			{
 
-			initPosTree = initPosTree + 500.0;
+				initPosTree = initPosTree + 500.0;
 
-			buildTree();//Logic to loop build trees
+				buildTree();//Logic to loop build trees
 
+			}
+		
 		}
 
 	}
-
+	private void runningSound()
+	{
+		runSound.Play();
+	}
 	private void OnTriggerEnter(Collider other)
 	{
 		if (other.gameObject.CompareTag("coin"))
 		{
 			Destroy(other.gameObject);
+			coinSound.Play();
 			ScoreScript.scoreValue += 1;
 
 			if (speed < maxSpeedValue && (ScoreScript.scoreValue % 100f) == 0f)
 			{
 				speed += 10.0f;
 			}
-		}
-		if (other.gameObject.CompareTag("obstacles"))
+
+		}else if (other.gameObject.CompareTag("obstacles"))
 		{
 			remy.SetTrigger("fallForward");
 			rb.velocity = new Vector3(0, 0, 0);
-			stop = 1;
+			endGame = true;
+			pause();
 		}
 	}
 
+	public void pause()
+	{
+		if (endGame)
+		{
+			resumeButton.interactable = false;
+		}
+		pauseCanvasObject.enabled = true;
+		stop = true;
+	}
+
+	public void resume()
+	{
+		if (!endGame)
+		{
+			pauseCanvasObject.enabled = false;
+			stop = false;
+			Time.timeScale = 1.0f;
+		}
+	}
 
 	void FixedUpdate() {
 
-		if ( stop == 1 ) {
-			rb.velocity = new Vector3(0, 0, 0);
-		}
-		else { 
+		if (!stop)
+		{
+			//Logic for the Looping of the trees sideways
+			if ( ( int ) transform.position.z > ( initPosTree - 100.0 ) )
+			{
+				initPosTree = initPosTree + 500.0;
+				buildTree();//Logic to loop build trees
+			}
+			
 			rb.velocity = new Vector3(0, 0, speed);
+
 		}
+
 	}
 
 
@@ -388,13 +444,11 @@ public class Player : MonoBehaviour {
 					}
 					else if (horizontalStartTouchPosition >= touchSensitivity && transform.position.x < 5.0f)
 					{
-						cameraScript.setPosition(new Vector3(cameraCurrentPosition.x + 5.0f, cameraCurrentPosition.y, cameraCurrentPosition.z));
-						rb.position = new Vector3(rb.position.x + 5.0f, rb.position.y, rb.position.z);						
+						rb.position = new Vector3(rb.position.x + 5.0f, rb.position.y, rb.position.z);
 					}
 					else if (horizontalStartTouchPosition < touchSensitivity && transform.position.x > -5.0f)
 					{
-						cameraScript.setPosition(new Vector3(cameraCurrentPosition.x - 5.0f, cameraCurrentPosition.y, cameraCurrentPosition.z));
-						rb.position = new Vector3(rb.position.x - 5.0f, rb.position.y, rb.position.z);						
+						rb.position = new Vector3(rb.position.x - 5.0f, rb.position.y, rb.position.z);
 					}
 
 				}
@@ -403,30 +457,32 @@ public class Player : MonoBehaviour {
 
 	}
 
-	private void shakeCamera(){
+	private void shakeCamera()
+	{
 
 		var cameraScript = GameObject.Find("Main Camera").GetComponent<camScript>();
-		
+
 		signValue *= -1;
 		float cameraMovement = currentCameraShakeDistance * signValue;
 		currentCameraShakeDistance -= currentCameraShakeDistance / cameraShake;
 
-		if ( cameraShake == cameraShakeMax )
+		if (cameraShake == cameraShakeMax)
 		{
 			cameraOriginalPosition = cameraScript.getPosition();
 
-			cameraScript.setPosition( new Vector3( ( cameraOriginalPosition.x + cameraMovement ) , cameraOriginalPosition.y , cameraOriginalPosition.z ) );
+			cameraScript.setPosition(new Vector3((cameraOriginalPosition.x + cameraMovement), cameraOriginalPosition.y, cameraOriginalPosition.z));
 
 			cameraShake--;
 
-		}else if ( cameraShake > 1 )
+		}
+		else if (cameraShake > 1)
 		{
 			cameraScript.setPosition(new Vector3((cameraOriginalPosition.x + cameraMovement), cameraOriginalPosition.y, cameraOriginalPosition.z));
 			cameraShake--;
 		}
 		else
 		{
-			cameraScript.setPosition(new Vector3( cameraOriginalPosition.x, cameraOriginalPosition.y, cameraOriginalPosition.z));
+			cameraScript.setPosition(new Vector3(cameraOriginalPosition.x, cameraOriginalPosition.y, cameraOriginalPosition.z));
 			cameraTilt = false;
 			cameraShake = cameraShakeMax;
 			currentCameraShakeDistance = maxCameraShakeDistance;

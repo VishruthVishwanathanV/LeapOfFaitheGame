@@ -8,11 +8,13 @@ public class camScript : MonoBehaviour
 	public float heightOfCamera;
 	public float offsetFromPlatyer;
 	private Vector3 offset;
+    public Player playerScript;
 
     // Start is called before the first frame update
     void Start()
     {
-		offset = new Vector3(0.0f,0.0f,offsetFromPlatyer);
+        playerScript = GameObject.Find("Jinu").GetComponent<Player>();
+        offset = new Vector3(0.0f,0.0f,offsetFromPlatyer);
     }
 
     // Update is called once per frame
@@ -20,7 +22,13 @@ public class camScript : MonoBehaviour
     {
         float z = player.transform.position.z;
 
-        transform.position = new Vector3(transform.position.x, heightOfCamera, z) - offset;
+        if ( ! playerScript.cameraTilt ) {
+            transform.position = new Vector3(player.transform.position.x, heightOfCamera, z) - offset;
+        }
+        else
+        {
+            transform.position = new Vector3(transform.position.x, heightOfCamera, z) - offset;
+        }
     }
 
     public Vector3 getPosition()
