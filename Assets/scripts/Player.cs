@@ -71,7 +71,7 @@ public class Player : MonoBehaviour {
 		jumping = false;
 
 		rb.velocity = new Vector3(0, 0, speed);
-		if (jumping)
+		if (!jumping)
 		{
 			rb.velocity = new Vector3(0, yAxisSpeed, speed);
 		}
@@ -203,8 +203,8 @@ public class Player : MonoBehaviour {
 	private void resetCollider()
 	{
 		jumping = false;
-		jinuCollider.center = new Vector3( -0.04f , 2.07f , 0.16f );
-		jinuCollider.size = new Vector3( 1.47f , 3.04f , 1.94f );
+		jinuCollider.center = new Vector3( -0.04f , 1.80f, 0.16f );
+		jinuCollider.size = new Vector3( 1.47f , 3.59f, 1.94f );
 	}
 
 	private void OnTriggerEnter(Collider other)
@@ -254,7 +254,7 @@ public class Player : MonoBehaviour {
 		if (!stop)
 		{			
 			rb.velocity = new Vector3(0, 0, speed);
-			if (jumping)
+			if (!jumping)
 			{
 				rb.velocity = new Vector3(0, yAxisSpeed, speed);
 			}
