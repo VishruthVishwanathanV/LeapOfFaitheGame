@@ -179,6 +179,25 @@ public class Player : MonoBehaviour {
 	{
 		runSound.Play();
 	}
+
+	private void startJump()
+	{
+		jinuCollider.center = new Vector3( -0.04f , 3.89f , 0.18f );
+		jinuCollider.size = new Vector3(1.47f, 2.66f , 2.72f );
+	}
+
+	private void startSlide()
+	{		
+		jinuCollider.center = new Vector3( -0.37f , 0.75f , 0.33f );
+		jinuCollider.size = new Vector3( 1.73f , 1.53f , 2.43f );
+	}
+
+	private void resetCollider()
+	{
+		jinuCollider.center = new Vector3( -0.04f , 2.07f , 0.16f );
+		jinuCollider.size = new Vector3( 1.47f , 3.04f , 1.94f );
+	}
+
 	private void OnTriggerEnter(Collider other)
 	{
 		if (other.gameObject.CompareTag("coin"))
@@ -195,7 +214,6 @@ public class Player : MonoBehaviour {
 		}else if (other.gameObject.CompareTag("obstacles"))
 		{
 			remy.SetTrigger("fallForward");
-			rb.velocity = new Vector3(0, 0, 0);
 			endGame = true;
 			pause();
 		}
@@ -207,6 +225,7 @@ public class Player : MonoBehaviour {
 		{
 			resumeButton.interactable = false;
 		}
+		rb.velocity = new Vector3(0, 0, 0);
 		pauseCanvasObject.enabled = true;
 		stop = true;
 	}
@@ -224,16 +243,8 @@ public class Player : MonoBehaviour {
 	void FixedUpdate() {
 
 		if (!stop)
-		{
-			//Logic for the Looping of the trees sideways
-			if ( ( int ) transform.position.z > ( initPosTree - 100.0 ) )
-			{
-				initPosTree = initPosTree + 500.0;
-				buildTree();//Logic to loop build trees
-			}
-			
-			rb.velocity = new Vector3(0, 0, speed);
-
+		{			
+			rb.velocity = new Vector3(0, 0 , speed);
 		}
 
 	}
