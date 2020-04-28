@@ -9,6 +9,7 @@ using UnityEngine.UI;
 public class Player : MonoBehaviour {
 
 	public float speed;
+	public float yAxisSpeed=-10f;
 	public float maxSpeedValue = 130.0f;
 	public System.Boolean stop;
 	public int swipeSensitivity;
@@ -46,6 +47,7 @@ public class Player : MonoBehaviour {
 	public BoxCollider jinuCollider;
 	public AudioSource coinSound;
 	public AudioSource runSound;
+	private System.Boolean jumping;
 
 	void Start() {
 
@@ -66,7 +68,13 @@ public class Player : MonoBehaviour {
 		touchSensitivity = Screen.width / 2;
 		cameraTilt = false;
 
+		jumping = false;
+
 		rb.velocity = new Vector3(0, 0, speed);
+		if (jumping)
+		{
+			rb.velocity = new Vector3(0, yAxisSpeed, speed);
+		}
 
 		//Loogping terrain logic
 		terrainStep = 500;
@@ -181,19 +189,20 @@ public class Player : MonoBehaviour {
 	}
 
 	private void startJump()
-	{
+	{	jumping = true;
 		jinuCollider.center = new Vector3( -0.04f , 3.89f , 0.18f );
 		jinuCollider.size = new Vector3(1.47f, 2.66f , 2.72f );
 	}
 
 	private void startSlide()
-	{		
+	{	
 		jinuCollider.center = new Vector3( -0.37f , 0.75f , 0.33f );
 		jinuCollider.size = new Vector3( 1.73f , 1.53f , 2.43f );
 	}
 
 	private void resetCollider()
 	{
+		jumping = false;
 		jinuCollider.center = new Vector3( -0.04f , 2.07f , 0.16f );
 		jinuCollider.size = new Vector3( 1.47f , 3.04f , 1.94f );
 	}
@@ -244,7 +253,11 @@ public class Player : MonoBehaviour {
 
 		if (!stop)
 		{			
-			rb.velocity = new Vector3(0, 0 , speed);
+			rb.velocity = new Vector3(0, 0, speed);
+			if (jumping)
+			{
+				rb.velocity = new Vector3(0, yAxisSpeed, speed);
+			}
 		}
 
 	}
